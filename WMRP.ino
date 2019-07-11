@@ -19,6 +19,9 @@
 #define PIN_ADC_I_HEATER A3
 #define PIN_ADC_STAND    A2
 
+static const float ADC_REF_VOLT = 4.096;
+static const int ADC_MAX_TICK = 1024;
+
 //OUTPUT PINS
 #define PIN_HEATER       10
 #define PIN_STAND        13
@@ -649,8 +652,8 @@ void loop()
     voltage_input            = adc_to_u_in_calc(adc_voltage_input);                                 //voltage in volt divide with 10^6
     current_heater           = adc_to_i_heater_calc(adc_current_heater, adc_current_heater_offset); //current in volt divide with 10^6
 
-    //calculate real tip temperature as sum of thermo couple voltage and cold junction voltage
-    temperature_tip_absolute = 1000 * PolyEval((float)adc_temperature_tip_relative * 4.0 / 431.0 + PolyEval((float)temperature_grip / 1000.0, TempC_to_Emf_TypeD, 5), Emf_to_TempC_TypeD, 6); //temperature in grad celsius divide with 1000
+    //calculate real tip temperature as sum of thermo couple voltage and cold junction voltage; also compute adc ticks to millivolts
+    temperature_tip_absolute = 1000 * PolyEval((float)adc_temperature_tip_relative * (1000 * ADC_REF_VOLT / ADC_MAX_TICK) / 431.0 + PolyEval((float)temperature_grip / 1000.0, TempC_to_Emf_TypeD, 5), Emf_to_TempC_TypeD, 6); //temperature in grad celsius divide with 1000
 
     //temp_setpoint = constrain(temp_setpoint, MIN_TARGET_TEMP_DEG, MAX_TARGET_TEMP_DEG);
     if (status_stand_reed || status_stand_manu) {
